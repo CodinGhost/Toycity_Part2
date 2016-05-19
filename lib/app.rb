@@ -2,10 +2,11 @@ require 'date'
 require 'artii'
 require 'json'
 
-path = File.join(File.dirname(__FILE__), '../data/artii.rb')
-file = File.read(path)
+
 
 def setup_files
+	path = File.join(File.dirname(__FILE__), '../data/artii.rb')
+	file = File.read(path)
 	path = File.join(File.dirname(__FILE__), '../data/products.json')
 	file = File.read(path)
 	$products_hash = JSON.parse(file) # Global variable
@@ -19,7 +20,9 @@ end
 
 def create_report
 	title_report("Sales Report")
+	print_report "********************"
 	time_date
+	print_report "********************"
 	print_products
 	print_brands
 end
@@ -53,7 +56,6 @@ def product_base_method
 end
 
 def product_data(items)
-	$total_retail = items["full-price"].to_f * items["purchases"].length
 	products_name(items)
 	products_retail_price(items)
 	products_sold(items)
@@ -68,12 +70,12 @@ def products_name(items)
 end
 
 def products_retail_price(items)
-	print_report "Item Retail Price: $#{items["full-price"]}"
+	print_report "Retail Price: $#{items["full-price"]}"
 end
 
 def products_sold(items)
 	$total_purchased = items["purchases"].length
-	print_report "Total Sold: #{$total_purchased}"
+	print_report "Total Purchases: #{$total_purchased}"
 end
 
 def products_total_sales(items)
@@ -81,9 +83,7 @@ def products_total_sales(items)
 	items["purchases"].each do |price|
 		$total_sales += price["price"]
 	end
-	product_discount = ($total_retail - $total_sales) / $total_sales * 100
-	print_report "Total amount of sales: $#{$total_sales}"
-	print_report "#{product_discount}"
+	print_report "Total Amount of Sales: $#{$total_sales}"
 end
 
 def products_sold_avg(items)
@@ -92,8 +92,11 @@ def products_sold_avg(items)
 end
 
 def products_discount(items)
-	discount = Float(items["full-price"]) - $average_price
-	print_report "Average Discount: $#{discount}"
+	total_retail = items["full-price"].to_f * items["purchases"].length
+	product_discount = Float(items["full-price"]) - $average_price
+	print_report "Average Discount: $#{product_discount}"
+	percent_discount = (total_retail - $total_sales) / total_retail * 100
+	print_report "Average Discount Percentage:: #{percent_discount.round(2)}%"
 end
 
 def brand_base_method
@@ -125,7 +128,6 @@ def brand_data(brand)
 	print_report "Number of Products: #{$total_stock}"
 	print_report "Average Products Price: $#{($total_price/$brand_amount).round(2)}"
 	print_report "Total Revenue: $#{$total_revenue.round(2)}"
-
 end
 
 def brand_stock(item)
