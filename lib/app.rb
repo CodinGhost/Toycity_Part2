@@ -96,6 +96,52 @@ def products_discount(items)
 	print_report "Average Discount: $#{discount}"
 end
 
+def brand_base_method
+	brands = $products_hash["items"].map {|name| name["brand"]}.uniq
+	brands.each do |brand|
+		$by_brand = $products_hash["items"].select {|item| item["brand"] == brand}
+		$total_stock = 0
+		$total_price = 0
+		$total_revenue = 0
+		$brand_amount = $by_brand.length
+		brand_names(brand)
+		brand_data(brand)
+		print_report "********************"
+		print_report " "
+	end
+end
+
+def brand_names(brand)
+	print_report "#{brand}"
+	print_report "********************"
+end
+
+def brand_data(brand)
+	$by_brand.each do |item|
+		brand_stock(item)
+		brand_price(item)
+		brand_revenue(item)
+	end
+	print_report "Number of Products: #{$total_stock}"
+	print_report "Average Products Price: $#{($total_price/$brand_amount).round(2)}"
+	print_report "Total Revenue: $#{$total_revenue.round(2)}"
+
+end
+
+def brand_stock(item)
+	$total_stock += item["stock"]
+end
+
+def brand_price(item)
+	$total_price += item["full-price"].to_f
+end
+
+def brand_revenue(item)
+	item["purchases"].each do |price|
+		$total_revenue += price["price"]
+	end
+end
+
 def start
 	setup_files
 	create_report
