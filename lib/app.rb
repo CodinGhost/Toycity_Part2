@@ -1,113 +1,104 @@
-rewuire 'date'
+require 'date'
+require 'artii'
 require 'json'
-path = File.join(File.dirname(__FILE__), '../data/products.json')
+
+path = File.join(File.dirname(__FILE__), '../data/artii.rb')
 file = File.read(path)
-products_hash = JSON.parse(file)
 
-# Print "Sales Report" in ascii art
-
-# Print today's date
-current_time = DateTime.now.strftime('%m/%d/%y')
-
-puts "Today's Date: #{current_time}"
-
-# Print "Products" in ascii art
-
-# For each product in the data set:
-products_hash["items"].each do |product|
-	i = 0
-	amount_sales = []
-	total_retail = product["full-price"].to_f * product["purchases"].length
-	# Print the name of the toy
-	puts product["title"]
-	# Print the retail price of the toy
-	puts "Retail Price: $#{product["full-price"]}"
-	# Calculate and print the total number of purchases
-	puts "Total Purchases: #{product["purchases"].length}"
-	# Calculate and print the total amount of sales
-	while i < product["purchases"].length
-		product["purchases"].each do |sale|
-			amount_sales.push(sale["price"])
-			i += 1
-		end
-	end
-	total_sales = amount_sales.reduce(:+)
-	puts "Total Sales: $#{total_sales}"
-	# Calculate and print the average price the toy sold for
-	avg_price = total_sales / product["purchases"].length
-	puts "Average Price: $#{avg_price}"
-	# Calculate and print the average discount ($) based off the average sales price
-	avg_discount = (total_retail - total_sales) / product["purchases"].length
-	puts "Average Discount: $#{avg_discount}"
-	# Calculate and print the average discount (%) based off the average sales price
-	avg_discountPercent = (total_retail - total_sales) / total_retail * 100
-	puts "Average Discount Percentage: #{avg_discountPercent.round(2)}%"
-	puts "\n"
+def setup_files
+	path = File.join(File.dirname(__FILE__), '../data/products.json')
+	file = File.read(path)
+	$products_hash = JSON.parse(file) # Global variable
+	$report_file = File.new("../report.txt", "w+") # Create a new text file, w+ lets you read and write to the file.
 end
 
-# Print "Brands" in ascii art
-puts " _                         _     "
-puts "| |                       | |    "
-puts "| |__  _ __ __ _ _ __   __| |___ "
-puts "| '_ \\| '__/ _` | '_ \\ / _` / __|"
-puts "| |_) | | | (_| | | | | (_| \\__ \\"
-puts "|_.__/|_|  \\__,_|_| |_|\\__,_|___/"
-puts
+# Methods
+def print_report(text)
+	File.open($report_file, 'a') {|file| file.puts(text)}
+end
 
-# For each brand in the data set:
-# Gets rid of any duplicates
-brand = products_hash["items"].map {|brand_name| brand_name["brand"]}.uniq
-# Variables for the loops below
-lego_stock = nano_stock = lego_price = nano_price = lego_count = nano_count = lego_total = nano_total = i = 0
+def create_report
+	title_report("Sales Report")
+	time_date
+	print_products
+	print_brands
+end
 
+def title_report(name)
+	header_artii = Artii::Base.new
+	print_report header_artii.asciify(name)
+end
 
+def time_date
+	current_time = DateTime.now.strftime('%m/%d/%y')
+	print_report "Report Generated On: #{current_time} \n"
+end
 
-products_hash["items"].each do |stock|
-	#Checks if the brand name is LEGO
-	if stock["brand"] == "LEGO"
-		# Counts the number of toys that are in stock for the LEGO brand
-		lego_stock += stock["stock"]
-		# Changes stock["full-price"] from a string to a float
-		price = stock["full-price"].to_f
-		lego_price += price
-		# Keeps track of how many brands are Nano Blocks
-		lego_count += 1
-		# Adds each brand purchases["price"] together for total sales
-		stock["purchases"].each{|price| lego_total += price["price"]}
-		#Checks if the brand name is Nano Blocks
-	elsif stock["brand"] == "Nano Blocks"
-		# Counts the number of toys that are in stock for the Nano Blocks brand
-		nano_stock += stock["stock"]
-		# Changes stock["full-price"] from a string to a float
-		price = stock["full-price"].to_f
-		nano_price += price
-		# Keeps track of how many brands are Nano Blocks
-		nano_count += 1
-		# Adds each brand purchases["price"] together for total sales
-		stock["purchases"].each{|price| nano_total += price["price"]}
+def print_products
+	title_report("Products")
+	product_base_method
+end
+
+def print_brands
+	title_report("Brands")
+	brand_base_method
+end
+
+def product_base_method
+	$products_hash["items"].each do |items|
+		product_data(items)
+		print_report "********************"
+		print_report " "
 	end
 end
 
-while i < brand.length
-	if brand[i] == "LEGO"
-		# Print the name of the brand
-		puts brand[i] + "\n********************"
-		puts "Number of Products: #{lego_stock}"
-		# Calculate and print the average price of the brand's toys
-		average_price = lego_price / lego_count
-		puts "Average Product Price: $#{average_price.round(2)}"
-		# Calculate and print the total revenue of all the brand's toy sales combined
-		puts "Total Sales: $#{lego_total.round(2)}"
-		puts "\n"
-	elsif brand[i] =="Nano Blocks"
-		# Print the name of the brand
-		puts brand[i] + "\n********************"
-		puts "Number of Products: #{nano_stock}"
-		# Calculate and print the average price of the brand's toys
-		average_price = nano_price / nano_count
-		puts "Average Product Price: $#{average_price.round(2)}"
-		# Calculate and print the total revenue of all the brand's toy sales combined
-		puts "Total Sales: $#{nano_total.round(2)}"
-	end
-	i += 1
+def product_data(items)
+	$total_retail = items["full-price"].to_f * items["purchases"].length
+	products_name(items)
+	products_retail_price(items)
+	products_sold(items)
+	products_total_sales(items)
+	products_sold_avg(items)
+	products_discount(items)
 end
+
+def products_name(items)
+	print_report "Item Name: #{items["title"]}"
+	print_report "********************"
+end
+
+def products_retail_price(items)
+	print_report "Item Retail Price: $#{items["full-price"]}"
+end
+
+def products_sold(items)
+	$total_purchased = items["purchases"].length
+	print_report "Total Sold: #{$total_purchased}"
+end
+
+def products_total_sales(items)
+	$total_sales = 0
+	items["purchases"].each do |price|
+		$total_sales += price["price"]
+	end
+	product_discount = ($total_retail - $total_sales) / $total_sales * 100
+	print_report "Total amount of sales: $#{$total_sales}"
+	print_report "#{product_discount}"
+end
+
+def products_sold_avg(items)
+	$average_price = $total_sales/$total_purchased
+	print_report "Average Price: $#{$average_price}"
+end
+
+def products_discount(items)
+	discount = Float(items["full-price"]) - $average_price
+	print_report "Average Discount: $#{discount}"
+end
+
+def start
+	setup_files
+	create_report
+end
+
+start
