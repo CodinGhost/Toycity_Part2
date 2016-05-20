@@ -14,6 +14,7 @@ end
 def print_report(text)
 	File.open($report_file, 'a') {|file| file.puts(text)}
 end
+
 # Brings all the product and brand data & adds it to the sales report
 def create_report
 	title_report("Sales Report")
@@ -56,6 +57,7 @@ def product_base_method
 		print_report " "
 	end
 end
+
 # Holds all of the products data
 def product_data(items)
 	# The product's name
